@@ -211,5 +211,163 @@
             name: "CentralWorld Parking", 
             rate: "3,500 THB/mo", 
             desc: "500 spaces, shopping benefit.", 
-            details: "Open 6am-12am. 500 spaces. Free 2hrs](#)*
-
+            details: "Open 6am-12am. 500 spaces. Free 2hrs with receipt.",
+            img: imgPlaceholder
+          }
+        ],
+        "South": [
+          { 
+            name: "Bang Na Parking", 
+            rate: "1,900 THB/mo", 
+            desc: "Open 24h, easy access.", 
+            details: "Open 24h. 100 spaces. Rate: 20THB/hr.",
+            img: imgPlaceholder
+          }
+        ],
+        "East": [
+          { 
+            name: "Ekkamai Parking", 
+            rate: "2,000 THB/mo", 
+            desc: "Near Ekkamai BTS, 80 spaces.", 
+            details: "Open 24h. 80 spaces. Rate: 25THB/hr.",
+            img: imgPlaceholder
+          }
+        ],
+        "North": [
+          { 
+            name: "Chatuchak Parking", 
+            rate: "1,500 THB/mo", 
+            desc: "Weekend only, 300 spaces.", 
+            details: "Open 5am-10pm. 300 spaces. Weekend only.",
+            img: imgPlaceholder
+          }
+        ],
+        "West": [
+          { 
+            name: "Pinklao Parking", 
+            rate: "1,700 THB/mo", 
+            desc: "Open 24h, 120 spaces.", 
+            details: "Open 24h. 120 spaces. Rate: 15THB/hr.",
+            img: imgPlaceholder
+          }
+        ]
+      };
+
+      // UI functions
+      let currentZone = "";
+      let currentCarouselIdx = 0;
+
+      function selectZone(zone) {
+        currentZone = zone;
+        currentCarouselIdx = 0;
+        document.getElementById('zonesList').classList.add('hidden');
+        document.getElementById('parkingList').classList.remove('hidden');
+        document.getElementById('parkingZoneTitle').innerText = `Parking Sites in ${zone}`;
+        renderCarousel();
+      }
+
+      function backToZones() {
+        document.getElementById('parkingList').classList.add('hidden');
+        document.getElementById('zonesList').classList.remove('hidden');
+      }
+
+      function selectParking(zone, idx) {
+        document.getElementById('parkingList').classList.add('hidden');
+        document.getElementById('parkingDetails').classList.remove('hidden');
+        const site = parkingData[zone][idx];
+        document.getElementById('parkingDetailTitle').innerText = site.name;
+        document.getElementById('parkingDetailContent').innerHTML = `
+          <div><b>Monthly Rate:</b> ${site.rate}</div>
+          <div><b>Description:</b> ${site.desc}</div>
+          <div style="margin-top:8px;">${site.details}</div>
+        `;
+        document.getElementById('parkingDetails').setAttribute('data-zone', zone);
+      }
+
+      function backToParking() {
+        document.getElementById('parkingDetails').classList.add('hidden');
+        document.getElementById('parkingList').classList.remove('hidden');
+      }
+
+      // Carousel logic
+      function renderCarousel() {
+        const container = document.getElementById('carouselContainer');
+        container.innerHTML = '';
+
+        const sites = parkingData[currentZone];
+        if (!sites || sites.length === 0) return;
+
+        // Left arrow
+        const leftArrow = document.createElement('button');
+        leftArrow.className = 'carousel-arrow';
+        leftArrow.innerHTML = '&#8592;';
+        leftArrow.disabled = currentCarouselIdx === 0;
+        leftArrow.onclick = () => {
+          if (currentCarouselIdx > 0) {
+            currentCarouselIdx--;
+            renderCarousel();
+          }
+        };
+        container.appendChild(leftArrow);
+
+        // Carousel item (site)
+        const site = sites[currentCarouselIdx];
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'carousel-item';
+        itemDiv.onclick = () => selectParking(currentZone, currentCarouselIdx);
+
+        const img = document.createElement('img');
+        img.className = 'carousel-img';
+        img.src = site.img || imgPlaceholder;
+        img.alt = site.name;
+        itemDiv.appendChild(img);
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'carousel-text';
+        textDiv.innerHTML = `
+          <div>
+            <span class="carousel-title">${site.name}</span>
+            <span class="carousel-rate">${site.rate}</span>
+          </div>
+          <div class="carousel-desc">${site.desc}</div>
+        `;
+        itemDiv.appendChild(textDiv);
+
+        container.appendChild(itemDiv);
+
+        // Right arrow
+        const rightArrow = document.createElement('button');
+        rightArrow.className = 'carousel-arrow';
+        rightArrow.innerHTML = '&#8594;';
+        rightArrow.disabled = currentCarouselIdx === sites.length - 1;
+        rightArrow.onclick = () => {
+          if (currentCarouselIdx < sites.length - 1) {
+            currentCarouselIdx++;
+            renderCarousel();
+          }
+        };
+        container.appendChild(rightArrow);
+      }
+
+      // LINE LIFF initialization (unchanged)
+      const logOut = () => {
+        liff.logout();
+        window.location.reload();
+      };
+      const main = async () => {
+        await liff.init({ liffId: "2007671258-8RdDrrdV" });
+        if (liff.isLoggedIn()) {
+          const profile = await liff.getProfile();
+          profileImage.src = profile.pictureUrl;
+          profileName.innerText = profile.displayName;
+          profileUID.innerText = profile.userId;
+          userId = profile.userId;
+          lineprofile.style.display = "block";
+        } else {
+          liff.login();
+        }
+      };
+      main();
+    </script>
+  </body>
+</html>
