@@ -5,21 +5,126 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Select Package 2025</title>
     <style>
-      .message {
-        padding: 10px;
-        background: #ddd;
-      }
-      .hidden {
-        display: none;
+      body {
+        font-family: Arial, sans-serif;
       }
       .zone, .parking, .detail {
         margin: 20px 0;
       }
-      button {
-        display: block;
-        margin: 10px 0;
-        padding: 8px 16px;
+      /* Zone Buttons */
+      .zone-buttons {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+      }
+      .zone-btn {
+        background: #24b524;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: 18px 28px;
+        font-size: 18px;
+        cursor: pointer;
+        min-width: 180px;
+        text-align: center;
+        transition: background 0.2s;
+        font-weight: bold;
+        box-shadow: 0 2px 8px #0001;
+      }
+      .zone-btn:hover {
+        background: #179d17;
+      }
+      /* Return Button */
+      .return-btn {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        background: #ccc;
+        color: #222;
+        border: none;
+        border-radius: 8px;
+        padding: 10px 20px;
         font-size: 16px;
+        cursor: pointer;
+        margin-top: 18px;
+        font-weight: bold;
+        box-shadow: 0 2px 8px #0001;
+      }
+      .return-btn svg {
+        width: 20px;
+        height: 20px;
+        fill: #222;
+      }
+      /* Parking Carousel */
+      .carousel-container {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 18px;
+        margin-top: 16px;
+      }
+      .carousel-arrow {
+        background: none;
+        border: none;
+        font-size: 32px;
+        color: #24b524;
+        cursor: pointer;
+        padding: 0 12px;
+        user-select: none;
+      }
+      .carousel-arrow[disabled] {
+        color: #bbb;
+        cursor: default;
+      }
+      .carousel-item {
+        display: flex;
+        align-items: center;
+        background: #f7f7f7;
+        border-radius: 10px;
+        box-shadow: 0 2px 8px #0001;
+        padding: 12px 18px;
+        min-width: 340px;
+        max-width: 340px;
+        cursor: pointer;
+        transition: box-shadow 0.2s;
+      }
+      .carousel-item:hover {
+        box-shadow: 0 4px 16px #0002;
+        background: #eaf6ea;
+      }
+      .carousel-img {
+        width: 64px;
+        height: 64px;
+        border-radius: 8px;
+        object-fit: cover;
+        margin-right: 16px;
+        background: #ddd;
+      }
+      .carousel-text {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+      }
+      .carousel-title {
+        font-weight: bold;
+        font-size: 18px;
+        margin-bottom: 2px;
+      }
+      .carousel-rate {
+        font-weight: normal;
+        font-size: 15px;
+        color: #24b524;
+        margin-left: 8px;
+      }
+      .carousel-desc {
+        font-size: 14px;
+        color: #444;
+        margin-top: 2px;
+      }
+      .hidden {
+        display: none;
       }
     </style>
   </head>
@@ -35,113 +140,76 @@
     <!-- Zones List -->
     <div id="zonesList" class="zone">
       <h2>Select Zone</h2>
-      <button onclick="selectZone('Central Bangkok')">Central Bangkok</button>
-      <button onclick="selectZone('South')">South</button>
-      <button onclick="selectZone('East')">East</button>
-      <button onclick="selectZone('North')">North</button>
-      <button onclick="selectZone('West')">West</button>
+      <div class="zone-buttons">
+        <button class="zone-btn" onclick="selectZone('Central Bangkok')">Central Bangkok</button>
+        <button class="zone-btn" onclick="selectZone('South')">South</button>
+        <button class="zone-btn" onclick="selectZone('East')">East</button>
+        <button class="zone-btn" onclick="selectZone('North')">North</button>
+        <button class="zone-btn" onclick="selectZone('West')">West</button>
+      </div>
     </div>
 
     <!-- Parking List -->
     <div id="parkingList" class="parking hidden">
       <h2 id="parkingZoneTitle"></h2>
-      <div id="parkingSites"></div>
-      <button onclick="backToZones()">Back to Zones</button>
+      <div class="carousel-container" id="carouselContainer"></div>
+      <button class="return-btn" onclick="backToZones()">
+        <svg viewBox="0 0 20 20"><path d="M10.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L7.414 9H17a1 1 0 110 2H7.414l3.293 3.293a1 1 0 010 1.414z"/></svg>
+        Return
+      </button>
     </div>
 
     <!-- Parking Details -->
     <div id="parkingDetails" class="detail hidden">
       <h2 id="parkingDetailTitle"></h2>
       <div id="parkingDetailContent"></div>
-      <button onclick="backToParking()">Back to Parking List</button>
+      <button class="return-btn" onclick="backToParking()">
+        <svg viewBox="0 0 20 20"><path d="M10.707 15.707a1 1 0 01-1.414 0l-5-5a1 1 0 010-1.414l5-5a1 1 0 111.414 1.414L7.414 9H17a1 1 0 110 2H7.414l3.293 3.293a1 1 0 010 1.414z"/></svg>
+        Return
+      </button>
     </div>
 
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
       let userId = "";
 
-      // Updated parking data with Loco71, Sathorn, and Oakwood for Central Bangkok
+      // Dummy images
+      const imgPlaceholder = "https://via.placeholder.com/64?text=🚗";
+
+      // Updated parking data with dummy images, rate, and brief description
       const parkingData = {
         "Central Bangkok": [
-          { name: "Loco71", details: "Dummy details for Loco71. Open 24h. 50 spaces." },
-          { name: "Sathorn", details: "Dummy details for Sathorn. Covered parking. 100 spaces." },
-          { name: "Oakwood", details: "Dummy details for Oakwood. Secure parking. 80 spaces." },
-          { name: "Siam Center Parking", details: "Open 24h. 200 spaces. Rate: 30THB/hr." },
-          { name: "CentralWorld Parking", details: "Open 6am-12am. 500 spaces. Free 2hrs with receipt." }
-        ],
-        "South": [
-          { name: "Bang Na Parking", details: "Open 24h. 100 spaces. Rate: 20THB/hr." }
-        ],
-        "East": [
-          { name: "Ekkamai Parking", details: "Open 24h. 80 spaces. Rate: 25THB/hr." }
-        ],
-        "North": [
-          { name: "Chatuchak Parking", details: "Open 5am-10pm. 300 spaces. Weekend only." }
-        ],
-        "West": [
-          { name: "Pinklao Parking", details: "Open 24h. 120 spaces. Rate: 15THB/hr." }
-        ]
-      };
-
-      // UI functions
-      function selectZone(zone) {
-        document.getElementById('zonesList').classList.add('hidden');
-        document.getElementById('parkingList').classList.remove('hidden');
-        document.getElementById('parkingZoneTitle').innerText = `Parking Sites in ${zone}`;
-
-        const parkingSitesDiv = document.getElementById('parkingSites');
-        parkingSitesDiv.innerHTML = '';
-        (parkingData[zone] || []).forEach((site, idx) => {
-          const btn = document.createElement('button');
-          btn.innerText = site.name;
-          btn.onclick = () => selectParking(zone, idx);
-          parkingSitesDiv.appendChild(btn);
-        });
-
-        // Store selected zone for "back" functionality
-        parkingSitesDiv.setAttribute('data-zone', zone);
-      }
-
-      function backToZones() {
-        document.getElementById('parkingList').classList.add('hidden');
-        document.getElementById('zonesList').classList.remove('hidden');
-      }
-
-      function selectParking(zone, idx) {
-        document.getElementById('parkingList').classList.add('hidden');
-        document.getElementById('parkingDetails').classList.remove('hidden');
-        const site = parkingData[zone][idx];
-        document.getElementById('parkingDetailTitle').innerText = site.name;
-        document.getElementById('parkingDetailContent').innerText = site.details;
-
-        // Store for "back" functionality
-        document.getElementById('parkingDetails').setAttribute('data-zone', zone);
-      }
-
-      function backToParking() {
-        document.getElementById('parkingDetails').classList.add('hidden');
-        document.getElementById('parkingList').classList.remove('hidden');
-      }
-
-      // LINE LIFF initialization (unchanged)
-      const logOut = () => {
-        liff.logout();
-        window.location.reload();
-      };
-      const main = async () => {
-        await liff.init({ liffId: "2007671258-8RdDrrdV" });
-        if (liff.isLoggedIn()) {
-          const profile = await liff.getProfile();
-          profileImage.src = profile.pictureUrl;
-          profileName.innerText = profile.displayName;
-          profileUID.innerText = profile.userId;
-          userId = profile.userId;
-          lineprofile.style.display = "block";
-        } else {
-          liff.login();
-        }
-      };
-      main();
-    </script>
-  </body>
-</html>
+          { 
+            name: "Loco71", 
+            rate: "2,500 THB/mo", 
+            desc: "Convenient, secure, 24h access.", 
+            details: "Dummy details for Loco71. Open 24h. 50 spaces.",
+            img: imgPlaceholder
+          },
+          { 
+            name: "Sathorn", 
+            rate: "2,800 THB/mo", 
+            desc: "Covered parking, close to BTS.", 
+            details: "Dummy details for Sathorn. Covered parking. 100 spaces.",
+            img: imgPlaceholder
+          },
+          { 
+            name: "Oakwood", 
+            rate: "3,200 THB/mo", 
+            desc: "Secure, near Oakwood Residence.", 
+            details: "Dummy details for Oakwood. Secure parking. 80 spaces.",
+            img: imgPlaceholder
+          },
+          { 
+            name: "Siam Center Parking", 
+            rate: "3,000 THB/mo", 
+            desc: "Near Siam BTS, 24h, 200 spaces.", 
+            details: "Open 24h. 200 spaces. Rate: 30THB/hr.",
+            img: imgPlaceholder
+          },
+          { 
+            name: "CentralWorld Parking", 
+            rate: "3,500 THB/mo", 
+            desc: "500 spaces, shopping benefit.", 
+            details: "Open 6am-12am. 500 spaces. Free 2hrs](#)*
+
