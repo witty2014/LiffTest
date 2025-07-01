@@ -9,6 +9,18 @@
         padding: 10px;
         background: #ddd;
       }
+      .hidden {
+        display: none;
+      }
+      .zone, .parking, .detail {
+        margin: 20px 0;
+      }
+      button {
+        display: block;
+        margin: 10px 0;
+        padding: 8px 16px;
+        font-size: 16px;
+      }
     </style>
   </head>
   <body>
@@ -19,29 +31,111 @@
       </div>
       <div>UID <span id="profileUID">UID</span></div>
     </div>
+
+    <!-- Zones List -->
+    <div id="zonesList" class="zone">
+      <h2>Select Zone</h2>
+      <button onclick="selectZone('Central Bangkok')">Central Bangkok</button>
+      <button onclick="selectZone('South')">South</button>
+      <button onclick="selectZone('East')">East</button>
+      <button onclick="selectZone('North')">North</button>
+      <button onclick="selectZone('West')">West</button>
+    </div>
+
+    <!-- Parking List -->
+    <div id="parkingList" class="parking hidden">
+      <h2 id="parkingZoneTitle"></h2>
+      <div id="parkingSites"></div>
+      <button onclick="backToZones()">Back to Zones</button>
+    </div>
+
+    <!-- Parking Details -->
+    <div id="parkingDetails" class="detail hidden">
+      <h2 id="parkingDetailTitle"></h2>
+      <div id="parkingDetailContent"></div>
+      <button onclick="backToParking()">Back to Parking List</button>
+    </div>
+
     <script src="https://static.line-scdn.net/liff/edge/2/sdk.js"></script>
     <script>
       let userId = "";
 
+      // Updated parking data with Loco71, Sathorn, and Oakwood for Central Bangkok
+      const parkingData = {
+        "Central Bangkok": [
+          { name: "Loco71", details: "Dummy details for Loco71. Open 24h. 50 spaces." },
+          { name: "Sathorn", details: "Dummy details for Sathorn. Covered parking. 100 spaces." },
+          { name: "Oakwood", details: "Dummy details for Oakwood. Secure parking. 80 spaces." },
+          { name: "Siam Center Parking", details: "Open 24h. 200 spaces. Rate: 30THB/hr." },
+          { name: "CentralWorld Parking", details: "Open 6am-12am. 500 spaces. Free 2hrs with receipt." }
+        ],
+        "South": [
+          { name: "Bang Na Parking", details: "Open 24h. 100 spaces. Rate: 20THB/hr." }
+        ],
+        "East": [
+          { name: "Ekkamai Parking", details: "Open 24h. 80 spaces. Rate: 25THB/hr." }
+        ],
+        "North": [
+          { name: "Chatuchak Parking", details: "Open 5am-10pm. 300 spaces. Weekend only." }
+        ],
+        "West": [
+          { name: "Pinklao Parking", details: "Open 24h. 120 spaces. Rate: 15THB/hr." }
+        ]
+      };
+
+      // UI functions
+      function selectZone(zone) {
+        document.getElementById('zonesList').classList.add('hidden');
+        document.getElementById('parkingList').classList.remove('hidden');
+        document.getElementById('parkingZoneTitle').innerText = `Parking Sites in ${zone}`;
+
+        const parkingSitesDiv = document.getElementById('parkingSites');
+        parkingSitesDiv.innerHTML = '';
+        (parkingData[zone] || []).forEach((site, idx) => {
+          const btn = document.createElement('button');
+          btn.innerText = site.name;
+          btn.onclick = () => selectParking(zone, idx);
+          parkingSitesDiv.appendChild(btn);
+        });
+
+        // Store selected zone for "back" functionality
+        parkingSitesDiv.setAttribute('data-zone', zone);
+      }
+
+      function backToZones() {
+        document.getElementById('parkingList').classList.add('hidden');
+        document.getElementById('zonesList').classList.remove('hidden');
+      }
+
+      function selectParking(zone, idx) {
+        document.getElementById('parkingList').classList.add('hidden');
+        document.getElementById('parkingDetails').classList.remove('hidden');
+        const site = parkingData[zone][idx];
+        document.getElementById('parkingDetailTitle').innerText = site.name;
+        document.getElementById('parkingDetailContent').innerText = site.details;
+
+        // Store for "back" functionality
+        document.getElementById('parkingDetails').setAttribute('data-zone', zone);
+      }
+
+      function backToParking() {
+        document.getElementById('parkingDetails').classList.add('hidden');
+        document.getElementById('parkingList').classList.remove('hidden');
+      }
+
+      // LINE LIFF initialization (unchanged)
       const logOut = () => {
         liff.logout();
         window.location.reload();
       };
       const main = async () => {
-//        await liff.init({ liffId: "2000719050-rGVOBePm" });
         await liff.init({ liffId: "2007671258-8RdDrrdV" });
         if (liff.isLoggedIn()) {
           const profile = await liff.getProfile();
-
-          // update profile
           profileImage.src = profile.pictureUrl;
           profileName.innerText = profile.displayName;
           profileUID.innerText = profile.userId;
-
-          // collect userId
           userId = profile.userId;
-
-          // show profile
           lineprofile.style.display = "block";
         } else {
           liff.login();
